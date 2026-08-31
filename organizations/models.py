@@ -37,9 +37,8 @@ class OrganizationMembership(models.Model):
         ('MANAGER', 'Manager'),
         ('STAFF', 'Staff'),
     ])
-    branch_access = models.ManyToManyField(
-        Branch
-    )
+    branch_access = models.ManyToManyField(Branch)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -50,6 +49,13 @@ class OrganizationMembership(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user','organization'],
-                name="your_constraint_name"
+                name="unique_user_organization_membership"
             )
         ]
+
+    def add_branch(self,branch):
+        if self.organization == branch.organization:
+           self.branch_access.add(branch)
+           return True
+
+        return False
