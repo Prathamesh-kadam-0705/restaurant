@@ -15,7 +15,7 @@ class OrganizationListCreateView(APIView):
 
             return Response(
                 {
-                    "massage":"Organization added successfully",
+                    "message":"Organization added successfully",
                     "organization":OrganizationSerializer(organization).data
                 },
                 status=201
@@ -43,26 +43,62 @@ class OrganizationDetailView(APIView):
 
         return Response(serializer.data)
 
-class BranchListCreateView(APIView):
+    def patch(self,request,id):
 
-    def post(self,request,id):
+        organization = get_object_or_404(Organization,id=id)
+        serializer = OrganizationSerializer(organization,data = request.data,partial = True)
 
-        organization = get_object_or_404(Organization,id = id)
-
-        serializer = BranchSerializer(data = request.data)
-
-        if serializer.is_valid():
-
-            branch = serializer.save(organization=organization)
+        if serializer.is_valid() :
+            serializer.save()
 
             return Response(
                 {
-                    "message":"Branch added successfully",
-                    "branch":BranchSerializer(branch).data
+                    "message":"Organization updated successfully",
+                    "organization":OrganizationSerializer(organization).data
+                },
+                status=200
+            )
+        return Response(serializer.errors,status=400)
+
+    def delete(self,request,id):
+
+        organization = get_object_or_404(Organization,id=id)
+        organization.delete()
+
+        return Response(status=204)
+
+class BranchListCreateView(APIView):
+
+    def post(self, request, id):
+
+        organization = get_object_or_404(
+            Organization,
+            id=id
+        )
+
+        serializer = MembershipSerializer(
+            data=request.data,
+            context={"organization": organization}
+        )
+
+        if serializer.is_valid():
+
+            membership = serializer.save(
+                organization=organization
+            )
+
+            return Response(
+                {
+                    "message": "Member added successfully",
+                    "membership": MembershipSerializer(membership).data
                 },
                 status=201
             )
-        return Response(serializer.errors,400)
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
 
     def get(self,request,id):
 
@@ -114,3 +150,74 @@ class BranchDetailView(APIView):
         branch = get_object_or_404(Branch,id=branch_id,organization=organization)
         serializer = BranchSerializer(branch)
         return Response(serializer.data)
+
+    def patch(self,request,id,branch_id):
+
+        organization = get_object_or_404(Organization,id=id)
+        branch = get_object_or_404(Branch,id=branch_id,organization=organization)
+        serializer = BranchSerializer(
+            branch,
+            data=request.data,
+            partial = True
+        )
+
+        if serializer.is_valid() :
+            branch = serializer.save()
+
+            return Response(
+                {
+                    "message": "Branch updated successfully",
+                    "branch":BranchSerializer(branch).data
+                },
+                status=200
+            )
+        
+        return Response(serializer.errors,status=400)
+
+    def delete(self,request,id,branch_id):
+
+        organization = get_object_or_404(Organization,id=id)
+        branch = get_object_or_404(Branch,id=branch_id,organization=organization)
+        branch.delete()
+
+        return Response(
+            status=204
+        )
+
+
+class MemberDetailView(APIView):
+
+    def get(self,request,id,member_id):
+
+        organization = get_object_or_404(Organization,id=id)
+        member = get_object_or_404(OrganizationMembership,id= member_id,organization=organization)
+        serializer = MembershipSerializer(member)
+        return Response(serializer.data)
+
+    def patch(self,request,id,member_id):
+        organization = get_object_or_404(Organization,id=id)
+        member = get_object_or_404(OrganizationMembership,id=member_id,organization=organization)
+        serializer = MembershipSerializer(
+            member,
+            data = request.data,
+            partial = True
+        )
+
+        if serializer.is_valid() :
+            member = serializer.save()
+
+            return Response(
+                {
+                    "message":"Member updated successfully",
+                    "member":MembershipSerializer(member).data
+                },
+                status=200
+            )
+        return Response(serializer.errors,status=400)
+
+    def delete(self,request,id,member_id):
+
+        organization = get_object_or_404(Organization,id=id)
+        member = get_object_or_404(OrganizationMembership,id=member_id,organization=organization)
+        member.delete()
+        return Response(status=204)
