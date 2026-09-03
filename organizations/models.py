@@ -16,6 +16,7 @@ class Branch(models.Model):
         Organization,
         on_delete=models.CASCADE
     )
+    
     address = models.CharField(max_length = 250)
     phone = models.CharField(max_length=15)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -35,7 +36,6 @@ class OrganizationMembership(models.Model):
     role = models.CharField(max_length= 10,choices=[
         ('OWNER', 'Owner'),
         ('MANAGER', 'Manager'),
-        ('STAFF', 'Staff'),
     ])
     branch_access = models.ManyToManyField(Branch)
 
@@ -59,3 +59,46 @@ class OrganizationMembership(models.Model):
            return True
 
         return False
+
+class Food(models.Model):
+
+    
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.CASCADE,
+        related_name="foods"
+    )
+    
+
+    name = models.CharField(max_length=150)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+    image = models.ImageField(
+        upload_to="foods/",
+        blank=True,
+        null=True
+    )
+    is_available = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class Category(models.Model):
+    branch = models.ForeignKey(
+        Branch,
+        on_delete=models.CASCADE,
+        related_name="categories"
+    )
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
